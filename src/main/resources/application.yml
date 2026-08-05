@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/fleet}
+    username: ${DATABASE_USER:fleet}
+    password: ${DATABASE_PASSWORD:fleet-local}
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: 6379
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true

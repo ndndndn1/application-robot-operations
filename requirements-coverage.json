@@ -1,0 +1,10 @@
+{"schema_version":1,"requirements":[
+  {"requirement_id":"req-spring-api","kind":"required","technical":true,"coverage":"full","summary":"Spring Boot REST ingestion and query API.","evidence":["src/main/java/io/career262/fleet/TelemetryController.java"],"tests":["src/test/java/io/career262/fleet/RuleEngineTest.java","smoke.py"]},
+  {"requirement_id":"req-rest-integration","kind":"required","technical":true,"coverage":"full","summary":"Validated robot telemetry endpoint and bounded history query.","evidence":["src/main/java/io/career262/fleet/TelemetryController.java"],"tests":["smoke.py"]},
+  {"requirement_id":"req-rdb-sql","kind":"required","technical":true,"coverage":"full","summary":"Flyway-managed PostgreSQL event model and lookup index.","evidence":["src/main/resources/db/migration/V1__telemetry_event.sql"],"tests":["smoke.py"]},
+  {"requirement_id":"req-react-understanding","kind":"required","technical":true,"coverage":"full","summary":"React and TypeScript telemetry console bundled with the API.","evidence":["web/src/main.tsx"],"tests":["Dockerfile"]},
+  {"requirement_id":"req-git-collaboration","kind":"required","technical":false,"coverage":"not_demonstrable","summary":"Collaboration history is not fabricated from repository contents.","evidence":[],"tests":[]},
+  {"requirement_id":"pref-docker-ci","kind":"preferred","technical":true,"coverage":"full","summary":"Multi-stage container build, Compose readiness, and GitHub Actions publication.","evidence":["Dockerfile","compose.yaml",".github/workflows/publish.yml"],"tests":["smoke.py"]},
+  {"requirement_id":"pref-monitoring","kind":"preferred","technical":true,"coverage":"full","summary":"Prometheus metrics and critical event counter via Actuator.","evidence":["pom.xml","src/main/java/io/career262/fleet/TelemetryController.java"],"tests":["smoke.py"]},
+  {"requirement_id":"pref-cloud","kind":"preferred","technical":true,"coverage":"partial","summary":"OCI image is cloud-portable; provider-specific deployment is intentionally absent.","evidence":["Dockerfile","compose.yaml"],"tests":["smoke.py"]}
+]}
