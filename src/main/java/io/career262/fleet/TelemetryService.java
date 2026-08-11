@@ -57,8 +57,8 @@ public class TelemetryService {
         String fingerprint = fingerprint(input);
 
         // Serialize each robot's read/evaluate/write path across application replicas.
-        jdbc.queryForObject("select pg_advisory_xact_lock(hashtextextended(?, 0)) is null",
-                Boolean.class, input.robotId());
+        jdbc.query("select pg_advisory_xact_lock(hashtextextended(?, 0))", rs -> null,
+                input.robotId());
         StoredEvent existing = findByEventId(eventId);
         if (existing != null) {
             if (!existing.payloadHash().equals(fingerprint)) {
@@ -82,9 +82,9 @@ public class TelemetryService {
         String payloadJson = write(input);
         jdbc.update("insert into telemetry_event(event_id,payload_hash,robot_id,model_id,observed_at,x,y,"
                         + "battery,severity,rules,payload,response_json) "
-                        + "values (?::uuid,?,?,?,to_timestamp(?),?,?,?,?,?::text[],?::jsonb,?::jsonb)",
+                        + "values (?::uuid,?,?,?,to_timestamp(?),?,?,?,?,string_to_array(?,chr(31)),?::jsonb,?::jsonb)",
                 eventId, fingerprint, input.robotId(), input.modelId(), input.timestamp(), input.x(), input.y(),
-                input.battery(), result.severity(), result.rules().toArray(String[]::new), payloadJson, responseJson);
+                input.battery(), result.severity(), String.join("\u001f", result.rules()), payloadJson, responseJson);
 
         boolean advancesSnapshot = previous == null || input.timestamp() >= previous.timestamp();
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
@@ -98,7 +98,7 @@ public class TelemetryService {
 
     public List<Response> recent(String robotId, int limit) {
         try {
-            List<String> cached = redis.opsForList().range("fleet:ring:" + robotId, 0, limit - 1);
+            List<String> cached = redis.opsForList().range("fleet:ring:" + robotId, 0, RING_SIZE - 1);
             if (cached != null && !cached.isEmpty()) {
                 return cached.stream().map(value -> decode(value, false))
                         .sorted(Comparator.comparingDouble(
