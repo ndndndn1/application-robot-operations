@@ -69,7 +69,7 @@ python3 tools/soak.py --duration-seconds 60 --workers 8
 ```
 
 See [OPERATIONS.md](OPERATIONS.md) for health, metrics, outage, recovery, and soak guidance. CI also
-runs integration/concurrency and Redis-failure checks, dependency review, a high/critical Trivy gate,
+runs integration/concurrency and Redis-failure checks, Dependabot updates, a high/critical Trivy gate,
 locked dependency builds, non-root inspection, SBOM generation, and provenance attestation.
 
 ## Scope boundaries
