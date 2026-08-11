@@ -3,6 +3,49 @@
 This document records the acceptance contract for the telemetry-only hardening release. The
 machine-readable coverage map is [`requirements-coverage.json`](../requirements-coverage.json).
 
+## Target
+
+A production-oriented, telemetry-only service for receiving, evaluating, storing, and displaying
+robot fleet observations. The HTTP service binds to `127.0.0.1:8803`; PostgreSQL is authoritative
+and Redis is an optional bounded cache. The target does not command robots or implement vendor,
+ROS, CAN, or MQTT interfaces.
+
+## Inputs
+
+- `POST /api/telemetry` accepts `application/json`. Required fields are `robotId` (1-80 characters,
+  `[A-Za-z0-9][A-Za-z0-9._:-]*`), positive finite Unix-seconds `timestamp` no more than five minutes
+  in the future, finite `x` and `y` from -1,000,000 through 1,000,000, `battery` from 0 through 100,
+  `taskState` in `idle|moving|docking|charging|error`, zero to 32 uppercase error codes of at most 80
+  characters, and `modelId` in `standard|compact|heavy`. Optional `eventId` is an RFC 4122 UUID.
+  Unknown JSON fields are rejected.
+- `GET /api/robots/{robotId}/recent?limit=N` accepts the same robot-ID format and an integer limit
+  from 1 through 50; the default is 20.
+- The web console supplies the same typed telemetry fields. The deterministic command-line mocks
+  accept only the documented scenario, URL, duration, and worker arguments below.
+
+## Outputs
+
+- Successful ingestion returns HTTP 200 JSON with `eventId`, the normalized `telemetry` object,
+  `severity` (`normal|warn|critical`), string `rules`, nullable numeric `deltaMeters` and
+  `deltaBattery`, and boolean `duplicate`. An identical event replay returns the stored result with
+  `duplicate=true`; reuse of its ID with different content returns HTTP 409.
+- Recent lookup returns HTTP 200 JSON as `{ "robotId": string, "items": Response[] }`, newest first
+  by timestamp and event ID, capped by the requested limit and the 50-event cache ring.
+- Client errors use `application/problem+json` RFC 9457 objects with `type`, `title`, `status`,
+  `detail`, and `instance`. Health and Prometheus metrics are exposed under `/actuator`.
+
+## Software mocks
+
+- `python3 tools/mock_fleet.py generate SCENARIO FILE` accepts `nominal`, `anomalies`, `ordering`, or
+  `idempotency` and emits deterministic JSON Lines. Each line contains a telemetry input, expected
+  severity, and an optional expected rule.
+- `python3 tools/mock_fleet.py replay FILE --base-url http://127.0.0.1:8803 --verify` posts that JSONL
+  stream, writes one API response JSON object per line, and exits nonzero on transport or contract
+  mismatch.
+- `python3 tools/soak.py --duration-seconds S --workers W` is a bounded load mock: `S` is 1-86,400
+  and `W` is 1-64. It outputs one JSON object containing `requests`, `errors`, `mean_ms`, and
+  `p95_ms`. It generates observations only; it neither simulates nor invokes robot control.
+
 | Requirement | Acceptance evidence | Verification |
 | --- | --- | --- |
 | Strict telemetry API | Required fields, finite/ranged values, model profiles, task-state and error-code constraints, unknown-field rejection, and RFC 9457 problem responses | `TelemetryControllerTest`, `RuleEngineTest`, `tests/integration.py` |
