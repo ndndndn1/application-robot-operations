@@ -1,4 +1,7 @@
 target/
 web/node_modules/
 web/dist/
+__pycache__/
+*.pyc
+*.log
 .env

@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/api")
+@Validated
 public class TelemetryController {
     public record Telemetry(
             @NotBlank @Size(max = 80) @Pattern(regexp = "[A-Za-z0-9][A-Za-z0-9._:-]*") String robotId,
