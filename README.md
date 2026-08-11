@@ -72,6 +72,9 @@ See [OPERATIONS.md](OPERATIONS.md) for health, metrics, outage, recovery, and so
 runs integration/concurrency and Redis-failure checks, Dependabot updates, a high/critical Trivy gate,
 locked dependency builds, non-root inspection, SBOM generation, and provenance attestation.
 
+Review the [enterprise requirements](docs/enterprise-requirements.md) and
+[quality scorecard rationale](docs/quality-scorecard.md) for the acceptance contract and evidence.
+
 ## Scope boundaries
 
 Authentication, device certificates, TLS, tenant boundaries, and rate limits belong at the deployment
