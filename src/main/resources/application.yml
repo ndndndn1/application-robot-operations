@@ -1,4 +1,7 @@
 spring:
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/fleet}
     username: ${DATABASE_USER:fleet}
@@ -16,3 +19,9 @@ management:
     health:
       probes:
         enabled: true
+  metrics:
+    tags:
+      application: robot-fleet-telemetry
+server:
+  shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 20s
