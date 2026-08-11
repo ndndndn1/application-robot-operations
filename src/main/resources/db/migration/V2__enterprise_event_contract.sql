@@ -9,7 +9,7 @@ set event_id = gen_random_uuid(),
     payload_hash = repeat('0', 64),
     payload = jsonb_build_object(
         'robotId', robot_id, 'timestamp', extract(epoch from observed_at), 'x', x, 'y', y,
-        'battery', battery, 'taskState', 'idle', 'errorCodes', '[]'::jsonb, 'modelId', model_id),
+        'battery', battery, 'taskState', 'idle', 'errorCodes', '[]'::jsonb, 'modelId', model_id)
 where event_id is null;
 
 update telemetry_event

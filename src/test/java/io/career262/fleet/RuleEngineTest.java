@@ -28,4 +28,17 @@ class RuleEngineTest {
         var current = new RuleEngine.Packet("r", 2, 0, 0, 79, "charging", List.of(), "standard");
         assertTrue(engine.evaluate(current, previous, profile).rules().contains("charging_without_gain"));
     }
+
+    @Test void olderPacketIsPersistableButExplicitlyFlagged() {
+        var previous = new RuleEngine.Packet("r", 10, 0, 0, 80, "moving", List.of(), "standard");
+        var current = new RuleEngine.Packet("r", 9, 0, 0, 80, "moving", List.of(), "standard");
+        var result = engine.evaluate(current, previous, profile);
+        assertEquals("warn", result.severity());
+        assertTrue(result.rules().contains("out_of_order_timestamp"));
+    }
+
+    @Test void profileThresholdIsInclusive() {
+        var current = new RuleEngine.Packet("r", 2, 0, 0, 10, "idle", List.of(), "standard");
+        assertEquals("critical", engine.evaluate(current, null, profile).severity());
+    }
 }

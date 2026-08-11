@@ -11,10 +11,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -100,7 +100,11 @@ public class TelemetryService {
         try {
             List<String> cached = redis.opsForList().range("fleet:ring:" + robotId, 0, limit - 1);
             if (cached != null && !cached.isEmpty()) {
-                return cached.stream().map(value -> decode(value, false)).toList();
+                return cached.stream().map(value -> decode(value, false))
+                        .sorted(Comparator.comparingDouble(
+                                (Response value) -> value.telemetry().timestamp()).reversed()
+                                .thenComparing(Response::eventId))
+                        .limit(limit).toList();
             }
         } catch (RuntimeException exception) {
             cacheFailureCounter.increment();

@@ -10,6 +10,10 @@ spring:
     redis:
       host: ${REDIS_HOST:redis}
       port: 6379
+      timeout: 1s
+      connect-timeout: 1s
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
 management:
   endpoints:
     web:
@@ -24,4 +28,3 @@ management:
       application: robot-fleet-telemetry
 server:
   shutdown: graceful
-spring.lifecycle.timeout-per-shutdown-phase: 20s
