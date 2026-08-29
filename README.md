@@ -46,7 +46,9 @@ curl -fsS http://127.0.0.1:8803/api/v1/commands \
     \"action\":{\"type\":\"protective_stop\",\"reason\":\"operator test\"}}"
 ```
 
-The default target is the deterministic mock gateway. A real target requires both
+The default Compose deployment starts the deterministic `physical-robot-interface` mock on the
+private `backend` network, so the command examples above work without an external robot service.
+A real target requires both
 `ROBOT_TARGET_MODE=real` and `ROBOT_ALLOW_REAL=true` after adapter conformance and hardware safety
 approval. Software `protective_stop` is not a certified hardware emergency-stop circuit.
 

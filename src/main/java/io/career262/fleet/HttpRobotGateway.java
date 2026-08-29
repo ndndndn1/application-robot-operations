@@ -7,7 +7,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.HexFormat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -21,6 +25,7 @@ final class HttpRobotGateway implements RobotGateway {
     private final HttpClient client;
     private final String targetMode;
     private final boolean allowReal;
+    private final String identity;
 
     HttpRobotGateway(
             @Value("${robot.gateway-url}") String gatewayUrl,
@@ -32,9 +37,15 @@ final class HttpRobotGateway implements RobotGateway {
         this.allowReal = allowReal;
         this.mapper = mapper;
         this.client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
+        this.identity = digest(this.baseUri.normalize().toString());
         if (!targetMode.equals("mock") && !targetMode.equals("real")) {
             throw new IllegalArgumentException("robot.target-mode must be mock or real");
         }
+    }
+
+    @Override
+    public String identity() {
+        return identity;
     }
 
     @Override
@@ -93,5 +104,14 @@ final class HttpRobotGateway implements RobotGateway {
 
     private static String bounded(String value) {
         return value == null ? "" : value.substring(0, Math.min(value.length(), 512));
+    }
+
+    private static String digest(String value) {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException(impossible);
+        }
     }
 }
