@@ -4,7 +4,7 @@ on:
     branches: [main]
   pull_request:
 concurrency:
-  group: robot-fleet-${{ github.workflow }}-${{ github.ref }}
+  group: robot-operations-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

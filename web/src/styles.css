@@ -3,6 +3,9 @@
 body {margin: 0; background: radial-gradient(circle at top right, #16334b, #07111d 45%); min-height: 100vh;}
 main {width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0;}
 header {margin-bottom: 28px;} h1 {font-size: clamp(2rem, 6vw, 4.5rem); margin: 4px 0 10px; letter-spacing: -.05em;}
+.heading {display: flex; align-items: start; justify-content: space-between; gap: 16px;}
+.mode {background: #173f35; color: #7ff2cf; border: 1px solid #317b68; border-radius: 999px; padding: 8px 12px; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;}
+.notice {border-left: 3px solid #f3bc62; padding-left: 12px; color: #f5d9a7;}.hint,.command-id {color: #9db1c2; font-size: .86rem;}
 header p {color: #9db1c2; max-width: 700px;}.eyebrow {color: #62e6bd; text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; font-weight: 700;}
 .panel {background: rgba(12, 28, 43, .88); border: 1px solid #23425a; border-radius: 16px; padding: 24px; margin: 16px 0; box-shadow: 0 18px 45px #0006;}
 .form {display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;}
@@ -11,6 +14,6 @@ input, select {width: 100%; color: #eef8ff; background: #081724; border: 1px sol
 input:focus, select:focus {outline: 2px solid #62e6bd; outline-offset: 2px;}
 .actions {display: flex; align-items: end; gap: 10px; grid-column: 1 / -1;}
 button {border: 0; border-radius: 8px; padding: 12px 18px; background: #62e6bd; color: #052019; font-weight: 750; cursor: pointer;}
-button.secondary {background: #274960; color: #e8f5ff;} button:disabled {opacity: .5; cursor: wait;}
+button.secondary {background: #274960; color: #e8f5ff;} button.danger {background: #f08a82; color: #2c0b0b;} button:disabled {opacity: .5; cursor: wait;}
 h2 {font-size: 1rem; margin-top: 0;} pre {min-height: 180px; margin: 0; overflow: auto; color: #bfeadf; font-size: .82rem;}
 @media (max-width: 720px) {.form {grid-template-columns: 1fr;} main {padding-top: 32px;}}
