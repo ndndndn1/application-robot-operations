@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.career262.fleet.RobotCommandController.CommandResult;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -23,7 +22,7 @@ class RobotCommandControllerTest {
     @MockitoBean RobotCommandService service;
 
     @Test void validPhysicalContractIsForwarded() throws Exception {
-        String commandId = UUID.randomUUID().toString();
+        String commandId = "operator:ShiftA.Command_17";
         when(service.submit(any())).thenReturn(new CommandResult(commandId, "mock", false,
                 mapper.readTree("{\"status\":\"accepted\"}")));
         mvc.perform(post("/api/v1/commands").contentType("application/json").content("""

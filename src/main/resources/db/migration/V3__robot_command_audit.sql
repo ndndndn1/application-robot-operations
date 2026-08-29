@@ -1,9 +1,10 @@
 create table if not exists robot_command (
   id bigserial primary key,
-  command_id uuid not null,
+  command_id varchar(128) not null,
   request_hash char(64) not null,
   robot_id varchar(80) not null,
   target_mode varchar(16) not null check (target_mode in ('mock', 'real')),
+  gateway_identity char(64) not null,
   status varchar(32) not null,
   request_json jsonb not null,
   response_json jsonb not null,
