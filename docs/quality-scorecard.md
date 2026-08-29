@@ -1,6 +1,6 @@
 # Quality Scorecard
 
-The release currently earns **93/100** against an **80/100** acceptance target. The authoritative,
+The release currently earns **94/100** against an **80/100** acceptance target. The authoritative,
 CI-validated representation is [`quality/scorecard.json`](../quality/scorecard.json); this document
 provides the review rationale.
 
@@ -11,7 +11,7 @@ provides the review rationale.
 | Reliability and observability | 18 / 20 | After-commit Redis caching, TTL and database fallback, health/Prometheus endpoints, limits, and a soak harness |
 | Verification | 14 / 15 | Seven JVM tests plus API, idempotency, concurrency, ordering, Redis-failure, deterministic replay, and runtime checks |
 | Security and supply chain | 8 / 10 | Non-root read-only runtime, dropped capabilities, internal network, pinned inputs, locked npm, Trivy, Dependabot, SBOM, and provenance |
-| Documentation and usability | 8 / 10 | API examples, consistency/failure semantics, metrics, security boundaries, operations, and requirements coverage |
+| Documentation and usability | 9 / 10 | Telemetry and command examples, consistency/failure semantics, target gating, metrics, safety boundaries, operations, and requirements coverage |
 
 ## Hard gates
 

@@ -1,8 +1,8 @@
-# Robot Fleet Telemetry
+# Application Robot Operations
 
-An enterprise-oriented Spring Boot and React/TypeScript reference for ingesting robot state,
-applying model-aware rules, retaining an auditable event stream, and exposing operational metrics.
-It is telemetry-only: it does not control robots or implement vendor protocols.
+An enterprise-oriented Spring Boot and React/TypeScript operations application for ingesting robot
+state, applying model-aware rules, retaining auditable telemetry and command streams, and using a
+replaceable physical robot gateway. It never implements vendor or ROS protocols directly.
 
 ## Data contract
 
@@ -25,6 +25,30 @@ curl -fsS http://127.0.0.1:8803/api/telemetry \
 returns the stored decision with `duplicate: true`; reusing it for different content returns `409`.
 `GET /api/robots/{robotId}/recent?limit=20` returns decoded JSON objects ordered by observation time,
 not JSON-encoded strings.
+
+## Safe command lifecycle
+
+`POST /api/v1/commands` accepts the canonical `physical-robot-interface` command contract. The
+application records a SHA-256 fingerprint and gateway response in PostgreSQL before returning it.
+An identical `command_id` replay returns the stored response with `duplicate=true`; different
+content returns 409. Status and cancellation use `GET /api/v1/commands/{commandId}` and
+`POST /api/v1/commands/{commandId}/cancel`.
+
+```bash
+issued="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+expires="$(date -u -d '+60 seconds' +%Y-%m-%dT%H:%M:%SZ)"
+command_id="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+curl -fsS http://127.0.0.1:8803/api/v1/commands \
+  -H 'content-type: application/json' -d "{
+    \"contract_version\":\"1.0.0\",\"command_id\":\"$command_id\",
+    \"robot_id\":\"mh-01-a\",\"issued_at\":\"$issued\",\"expires_at\":\"$expires\",
+    \"expected_state_version\":0,
+    \"action\":{\"type\":\"protective_stop\",\"reason\":\"operator test\"}}"
+```
+
+The default target is the deterministic mock gateway. A real target requires both
+`ROBOT_TARGET_MODE=real` and `ROBOT_ALLOW_REAL=true` after adapter conformance and hardware safety
+approval. Software `protective_stop` is not a certified hardware emergency-stop circuit.
 
 ## Consistency and failure semantics
 
@@ -60,7 +84,7 @@ python3 quality/check_score.py
 cd web && npm ci --ignore-scripts && npm run typecheck && npm run build
 ```
 
-Deterministic mock scenarios support `nominal`, `anomalies`, `ordering`, and `idempotency`:
+Deterministic telemetry scenarios support `nominal`, `anomalies`, `ordering`, and `idempotency`:
 
 ```bash
 python3 tools/mock_fleet.py generate anomalies /tmp/anomalies.jsonl
@@ -78,5 +102,7 @@ Review the [enterprise requirements](docs/enterprise-requirements.md) and
 ## Scope boundaries
 
 Authentication, device certificates, TLS, tenant boundaries, and rate limits belong at the deployment
-perimeter and must be supplied before shared or production use. Robot control, ROS, CAN, MQTT, and
-vendor-specific adapters are deliberately out of scope. Default database credentials are local-only.
+perimeter and must be supplied before shared or production use. ROS, CAN, MQTT, vendor-specific
+protocols, trajectory generation, and certified safety behavior remain out of scope. The application
+submits canonical commands only through the configured gateway. Default database credentials are
+local-only.
