@@ -1,7 +1,7 @@
 services:
   app:
     build: {context: ., target: runtime}
-    image: ghcr.io/ndndndn1/robot-fleet-telemetry:latest
+    image: ghcr.io/ndndndn1/application-robot-operations:latest
     ports: ["127.0.0.1:8803:8080"]
     read_only: true
     tmpfs: ["/tmp:size=64m,mode=1777"]
@@ -15,9 +15,12 @@ services:
       DATABASE_USER: fleet
       DATABASE_PASSWORD: fleet-local
       REDIS_HOST: redis
+      ROBOT_GATEWAY_URL: ${ROBOT_GATEWAY_URL:-http://physical-robot-interface:8080}
+      ROBOT_TARGET_MODE: ${ROBOT_TARGET_MODE:-mock}
+      ROBOT_ALLOW_REAL: ${ROBOT_ALLOW_REAL:-false}
       HTTP_PROXY: http://172.30.0.10:3128
       HTTPS_PROXY: http://172.30.0.10:3128
-      NO_PROXY: 127.0.0.1,localhost,postgres,redis
+      NO_PROXY: 127.0.0.1,localhost,postgres,redis,physical-robot-interface
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
