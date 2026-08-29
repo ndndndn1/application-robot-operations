@@ -25,6 +25,10 @@ management:
         enabled: true
   metrics:
     tags:
-      application: robot-fleet-telemetry
+      application: application-robot-operations
+robot:
+  gateway-url: ${ROBOT_GATEWAY_URL:http://physical-robot-interface:8080}
+  target-mode: ${ROBOT_TARGET_MODE:mock}
+  allow-real: ${ROBOT_ALLOW_REAL:false}
 server:
   shutdown: graceful

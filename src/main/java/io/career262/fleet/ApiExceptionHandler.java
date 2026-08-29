@@ -41,7 +41,7 @@ public class ApiExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status,
                 detail == null ? status.getReasonPhrase() : detail);
         problem.setTitle(title);
-        problem.setType(URI.create("https://github.com/ndndndn1/robot-fleet-telemetry/problems/"
+        problem.setType(URI.create("https://github.com/ndndndn1/application-robot-operations/problems/"
                 + status.value()));
         problem.setInstance(URI.create(request.getRequestURI()));
         return ResponseEntity.status(status).body(problem);
