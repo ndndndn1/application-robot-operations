@@ -23,6 +23,17 @@ jobs:
         run: docker compose config --quiet
       - name: Run JVM tests and build runtime
         run: docker compose build test app
+      - name: Check out the exact physical mock contract
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ndndndn1/physical-robot-interface
+          ref: 40b3be7329d678c8fea022a7b938782367b8e15b
+          path: .dependency/physical-robot-interface
+      - name: Build the exact physical mock contract
+        run: >-
+          docker build --target runtime
+          --tag ghcr.io/ndndndn1/physical-robot-interface:latest
+          .dependency/physical-robot-interface
       - name: Create CI proxy network fixture
         run: docker network create --subnet 172.30.0.0/24 proxy-net
       - name: Start isolated runtime

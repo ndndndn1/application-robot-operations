@@ -49,6 +49,16 @@ final class HttpRobotGateway implements RobotGateway {
     }
 
     @Override
+    public JsonNode state(String robotId) {
+        return exchange("robots/" + robotId, "GET", null);
+    }
+
+    @Override
+    public JsonNode product(String productId) {
+        return exchangeVersioned("v2/products/" + productId, "GET", null);
+    }
+
+    @Override
     public JsonNode submit(JsonNode request) {
         requireAuthorizedTarget();
         return exchange("commands", "POST", request);
@@ -73,8 +83,12 @@ final class HttpRobotGateway implements RobotGateway {
     }
 
     private JsonNode exchange(String path, String method, JsonNode body) {
+        return exchangeVersioned("v1/" + path, method, body);
+    }
+
+    private JsonNode exchangeVersioned(String path, String method, JsonNode body) {
         try {
-            HttpRequest.Builder builder = HttpRequest.newBuilder(baseUri.resolve("v1/" + path))
+            HttpRequest.Builder builder = HttpRequest.newBuilder(baseUri.resolve(path))
                     .timeout(REQUEST_TIMEOUT)
                     .header("accept", "application/json")
                     .header("x-robot-target-mode", targetMode);

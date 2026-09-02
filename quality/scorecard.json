@@ -3,12 +3,12 @@
   "target": 80,
   "score": 94,
   "categories": [
-    {"id": "functional_contract", "max": 25, "earned": 25, "evidence": ["Strict telemetry validation, model profiles, RFC 9457 errors, idempotency, and object history are implemented."]},
-    {"id": "data_integrity", "max": 20, "earned": 20, "evidence": ["PostgreSQL transactions, per-robot advisory locks, unique event IDs, payload hashes, and stable ordering protect event state."]},
-    {"id": "reliability_observability", "max": 20, "earned": 18, "evidence": ["After-commit Redis caching has TTLs and database fallback; health probes, Prometheus metrics, resource limits, and a soak harness are provided."]},
-    {"id": "verification", "max": 15, "earned": 14, "evidence": ["Seven JVM tests plus API, idempotency, concurrency, ordering, Redis-failure, deterministic replay, and runtime checks run in CI."]},
+    {"id": "functional_contract", "max": 25, "earned": 25, "evidence": ["Strict telemetry and calibration, BC-RNN policy, 6DoF perception, validated grasp, and execution-intent contracts use RFC 9457 failures."]},
+    {"id": "data_integrity", "max": 20, "earned": 20, "evidence": ["PostgreSQL transactions, advisory locks, immutable content digests, actor approvals, unique IDs, and stable ordering protect state."]},
+    {"id": "reliability_observability", "max": 20, "earned": 18, "evidence": ["A leased retry-bounded outbox performs JIT robot version and safety checks; cache fallback, health probes, metrics, and resource limits are provided."]},
+    {"id": "verification", "max": 15, "earned": 14, "evidence": ["JVM contract and controller tests plus API, concurrency, Redis-failure, and perception approval-to-dispatch runtime checks run in CI."]},
     {"id": "security_supply_chain", "max": 10, "earned": 8, "evidence": ["Non-root read-only runtime, dropped capabilities, internal network, pinned images/actions, locked npm install, Trivy, Dependabot, SBOM, and provenance are configured."]},
-    {"id": "documentation_usability", "max": 10, "earned": 9, "evidence": ["README and operations runbook document telemetry and command inputs and outputs, target gates, failure recovery, safety boundaries, and limits."]}
+    {"id": "documentation_usability", "max": 10, "earned": 9, "evidence": ["README and requirements document inputs, outputs, MM-01 mock target, lifecycle states, target gates, failure recovery, safety boundaries, and limits."]}
   ],
   "hard_gates": {"tests": true, "runtime_smoke": true, "memory": true, "security": true, "docs_examples": true}
 }
