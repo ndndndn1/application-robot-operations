@@ -257,9 +257,15 @@ public class PerceptionOperationsService {
             jdbc.update("update robot_command_outbox set state='failed',last_error=?,lease_until=null,"
                     + "updated_at=now() where intent_id=?", bounded(rejected.getMessage()), intentId);
         } catch (RuntimeException transientFailure) {
+            String error = bounded(transientFailure.getMessage());
             jdbc.update("update robot_command_outbox set state=case when attempts>=5 then 'failed' "
                             + "else 'pending' end,last_error=?,lease_until=null,updated_at=now() "
-                            + "where intent_id=?", bounded(transientFailure.getMessage()), intentId);
+                            + "where intent_id=?", error, intentId);
+            jdbc.update("update execution_intent set state='failed',"
+                            + "error_code='dispatch_retry_exhausted',updated_at=now() "
+                            + "where intent_id=? and state='approved' and exists "
+                            + "(select 1 from robot_command_outbox where intent_id=? and state='failed')",
+                    intentId, intentId);
         }
     }
 
