@@ -27,6 +27,17 @@ telemetry cache. Vendor, ROS, CAN, and MQTT interfaces remain in the embedded ad
   before reaching the gateway.
 - `GET /api/v1/commands/{commandId}` and `POST /api/v1/commands/{commandId}/cancel` accept UUIDs and
   operate only on commands already recorded by this application.
+- `POST /api/v2/calibrations` accepts bounded robot/product/rig and TF frame IDs, object-valued
+  intrinsics/extrinsics, immutable source SHA-256, method/version, and observation time. Approval is
+  a separate actor-attributed transition.
+- `POST /api/v2/policies` accepts only `bc_rnn`, a target product ID, model/dataset and input/output
+  schema hashes, the exact `sha256:` capability-profile digest, and rates from 0 through 1.
+  Promotion is separately attributed.
+- `POST /api/v2/perception-results` accepts an approved calibration digest, deployed policy digest,
+  nonnegative scene sequence, unit 6DoF quaternion, and 1-64 grasp candidates. A validated MM-01
+  candidate must have exactly six joint positions and a force in `(0, 250]` N.
+- `POST /api/v2/execution-intents` references one recorded validated grasp, expected robot state
+  version, future expiry, and requester. `/approve` requires a separate bounded actor string.
 - The web console supplies the same typed telemetry fields. The deterministic command-line mocks
   accept only the documented scenario, URL, duration, and worker arguments below.
 
@@ -41,6 +52,10 @@ telemetry cache. Vendor, ROS, CAN, and MQTT interfaces remain in the embedded ad
 - Command calls return `{command_id,target_mode,duplicate,record}`. PostgreSQL retains request hash,
   request, gateway response, status, target mode, and timestamps. Exact replay returns the original
   response with `duplicate=true`; changed content with the same ID returns 409.
+- V2 creation returns `{id,digest,state}`. Intent lookup additionally returns `expires_at`, nullable
+  `command_id`, and nullable `error_code`. PostgreSQL owns approvals and a leased retry-bounded
+  outbox; dispatch rechecks live state version, product/profile identity, joint and force limits,
+  and hardware/software safety state.
 - Client errors use `application/problem+json` RFC 9457 objects with `type`, `title`, `status`,
   `detail`, and `instance`. Health and Prometheus metrics are exposed under `/actuator`.
 
@@ -66,6 +81,8 @@ telemetry cache. Vendor, ROS, CAN, and MQTT interfaces remain in the embedded ad
 | Command gateway contract | Strict physical command envelope, expiry and action validation, status, cancellation, and RFC 9457 rejection | `RobotCommandControllerTest`, cross-repository integration smoke |
 | Command idempotency and audit | UUID and payload hash serialize duplicate submission; PostgreSQL retains canonical request and response | `RobotCommandService`, `V3__robot_command_audit.sql`, integration smoke |
 | Mock-first safety | Mock is the default; real targeting requires an independent explicit enablement flag after safety approval | `HttpRobotGateway`, operations runbook |
+| Perception provenance | Calibration, BC-RNN release, result, and intent are immutable digest-addressed records with explicit state transitions | `PerceptionOperationsService`, `V4__perception_policy_lifecycle.sql`, `PerceptionOperationsContractTest` |
+| Human approval and durable dispatch | Approval writes a PostgreSQL outbox entry; deterministic command IDs, leases, bounded retries, expiry, JIT state-version and safety checks prevent stale execution | `tests/integration.py`, `PerceptionOperationsService` |
 | Deterministic fleet simulation | Nominal, anomaly, ordering, and idempotency scenarios can be generated, replayed, and verified repeatably | `tools/mock_fleet.py` |
 | Operational readiness | Prometheus metrics, health probes, resource ceilings, non-root read-only runtime, runbook, and bounded soak harness | `OPERATIONS.md`, `tools/soak.py`, CI runtime inspection |
 | Supply-chain controls | Locked npm install, pinned build/runtime images and actions, high/critical Trivy gate, Dependabot, SBOM, and provenance | `.github/workflows/publish.yml`, `.github/dependabot.yml` |
@@ -73,9 +90,11 @@ telemetry cache. Vendor, ROS, CAN, and MQTT interfaces remain in the embedded ad
 
 ## Scope boundary
 
-This release ingests telemetry and submits canonical commands to a configured gateway. It does not
-generate trajectories, bypass robot capability checks, implement vendor/ROS/CAN/MQTT protocols, or
-claim certified safety behavior. Software protective stop and hardware E-stop remain distinct.
+This release ingests telemetry and manages calibration, policy, perception-result, and approved
+execution metadata before submitting canonical commands to a configured gateway. It does not carry
+raw images or models, generate trajectories, bypass robot capability checks, implement
+vendor/ROS/CAN/MQTT protocols, or claim certified safety behavior. Software protective stop and
+hardware E-stop remain distinct.
 
 ## Release gate
 

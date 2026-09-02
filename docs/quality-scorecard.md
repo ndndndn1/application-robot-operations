@@ -6,12 +6,12 @@ provides the review rationale.
 
 | Category | Earned / maximum | Evidence |
 | --- | ---: | --- |
-| Functional contract | 25 / 25 | Strict telemetry validation, model profiles, RFC 9457 errors, idempotency, and object history |
-| Data integrity | 20 / 20 | PostgreSQL transactions, per-robot advisory locks, unique event IDs, payload hashes, and stable ordering |
-| Reliability and observability | 18 / 20 | After-commit Redis caching, TTL and database fallback, health/Prometheus endpoints, limits, and a soak harness |
-| Verification | 14 / 15 | Seven JVM tests plus API, idempotency, concurrency, ordering, Redis-failure, deterministic replay, and runtime checks |
+| Functional contract | 25 / 25 | Strict telemetry and calibration/policy/perception/intent validation, model profiles, RFC 9457 errors, idempotency, and object history |
+| Data integrity | 20 / 20 | PostgreSQL transactions, advisory locks, immutable content digests, actor approvals, unique IDs, and stable ordering |
+| Reliability and observability | 18 / 20 | Durable leased command outbox, bounded retry, JIT robot state/safety checks, cache fallback, health/metrics, and resource limits |
+| Verification | 14 / 15 | JVM contract/controller tests plus API, idempotency, concurrency, Redis-failure, perception approval/dispatch, and runtime checks |
 | Security and supply chain | 8 / 10 | Non-root read-only runtime, dropped capabilities, internal network, pinned inputs, locked npm, Trivy, Dependabot, SBOM, and provenance |
-| Documentation and usability | 9 / 10 | Telemetry and command examples, consistency/failure semantics, target gating, metrics, safety boundaries, operations, and requirements coverage |
+| Documentation and usability | 9 / 10 | Inputs, outputs, MM-01 mock target, perception lifecycle, failure semantics, target gating, metrics, safety boundaries, and operations |
 
 ## Hard gates
 

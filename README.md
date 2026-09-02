@@ -52,6 +52,32 @@ A real target requires both
 `ROBOT_TARGET_MODE=real` and `ROBOT_ALLOW_REAL=true` after adapter conformance and hardware safety
 approval. Software `protective_stop` is not a certified hardware emergency-stop circuit.
 
+## Perception and policy approval lifecycle
+
+The `/api/v2` control plane turns artifacts produced by simulation and embedded perception into an
+auditable command intent. It stores metadata and digests, not RGB-D frames or model binaries.
+
+1. Register `POST /api/v2/calibrations`, then explicitly approve the bundle at
+   `/api/v2/calibrations/{id}/approve`.
+2. Register an evaluated `bc_rnn` release at `POST /api/v2/policies`. Promotion requires
+   `success_rate >= 0.80`, `stress_success_rate >= 0.70`, and the immutable
+   `capability_profile_digest` from `GET /v2/products/{product_id}`.
+3. Record a perception result whose calibration and policy digests exactly match the approved
+   releases. A validated MM-01 grasp contains six joint positions and a force limit at most 250 N.
+4. Create an execution intent and approve it. The durable outbox re-reads the mock robot's
+   `state_version` and safety state immediately before submitting a deterministic command ID.
+
+The default target is the software product `MM-01` mock through its HTTP contract. Inputs are
+calibration metadata, immutable SHA-256 artifact identities, 6DoF pose, validated grasp candidates,
+and an operator identity. Outputs are lifecycle state plus stable content digest and, after dispatch,
+the physical-interface command ID. Robot CAD, camera frames, datasets, and model files stay in their
+own module/storage boundary.
+
+Creation never moves hardware. Approval only makes the intent eligible for dispatch; expiry,
+changed state version, hardware safety state, or software protective stop rejects it fail-closed.
+The same JIT check also rejects changed product/profile digests, wrong joint count, any joint outside
+its named position bounds, and force above the product profile maximum.
+
 ## Consistency and failure semantics
 
 Ingestion runs in a PostgreSQL transaction. A transaction-scoped advisory lock serializes each
@@ -105,6 +131,6 @@ Review the [enterprise requirements](docs/enterprise-requirements.md) and
 
 Authentication, device certificates, TLS, tenant boundaries, and rate limits belong at the deployment
 perimeter and must be supplied before shared or production use. ROS, CAN, MQTT, vendor-specific
-protocols, trajectory generation, and certified safety behavior remain out of scope. The application
-submits canonical commands only through the configured gateway. Default database credentials are
-local-only.
+protocols, trajectory generation, raw sensor transport, model serving, and certified safety behavior
+remain out of scope. The application submits canonical commands only through the configured gateway.
+Default database credentials are local-only.
