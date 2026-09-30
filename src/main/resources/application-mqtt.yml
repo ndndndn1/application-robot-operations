@@ -1,0 +1,14 @@
+fleet:
+  mqtt:
+    broker-uri: ${MQTT_BROKER_URI:tcp://mosquitto:1883}
+    client-id: ${MQTT_CLIENT_ID:fleet-ingress-demo}
+    session-expiry-seconds: ${MQTT_SESSION_EXPIRY_SECONDS:86400}
+    max-payload-bytes: ${MQTT_MAX_PAYLOAD_BYTES:16384}
+spring:
+  datasource:
+    hikari:
+      connection-timeout: 3000
+      validation-timeout: 1000
+      data-source-properties:
+        connectTimeout: 3
+        socketTimeout: 5

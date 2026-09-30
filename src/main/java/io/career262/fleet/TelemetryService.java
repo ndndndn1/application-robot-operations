@@ -11,7 +11,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
@@ -97,18 +96,8 @@ public class TelemetryService {
     }
 
     public List<Response> recent(String robotId, int limit) {
-        try {
-            List<String> cached = redis.opsForList().range("fleet:ring:" + robotId, 0, RING_SIZE - 1);
-            if (cached != null && !cached.isEmpty()) {
-                return cached.stream().map(value -> decode(value, false))
-                        .sorted(Comparator.comparingDouble(
-                                (Response value) -> value.telemetry().timestamp()).reversed()
-                                .thenComparing(Response::eventId))
-                        .limit(limit).toList();
-            }
-        } catch (RuntimeException exception) {
-            cacheFailureCounter.increment();
-        }
+        // A cache can be incomplete after commit-before-cache crash, eviction, or partial failure.
+        // Operator history must always reflect durable PostgreSQL truth (including out-of-order rows).
         return jdbc.query("select response_json::text from telemetry_event where robot_id=? "
                         + "order by observed_at desc, id desc limit ?",
                 (rs, row) -> decode(rs.getString(1), false), robotId, limit);

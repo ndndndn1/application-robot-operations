@@ -9,7 +9,7 @@
 
 Alert on sustained HTTP 5xx, PostgreSQL pool exhaustion, any cache-failure increase combined with
 database latency, or absence of expected telemetry. Redis is an optimization: PostgreSQL remains
-authoritative and recent-event reads fall back to it. A Redis outage can increase latency but must
+authoritative and recent-event reads always use it. A Redis outage can increase latency but must
 not reject valid ingestion.
 
 ## Recovery and maintenance
@@ -38,3 +38,8 @@ Run `python3 tools/soak.py --duration-seconds 3600 --workers 8` only in an isola
 The default 60-second run is intended as a quick stability check. The harness reports request count,
 errors, mean latency, and p95 latency; capture container memory and database growth alongside it for
 a formal soak result.
+
+## Optional MQTT ingress
+
+See [MQTT recovery](docs/mqtt-recovery.md) for the standalone Mosquitto demo, durable rejection audit,
+commit-before-ACK guarantees, bounded outages, queue overflow limits, and reproducible fault tests.

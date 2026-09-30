@@ -8,7 +8,7 @@ machine-readable coverage map is [`requirements-coverage.json`](../requirements-
 A production-oriented application for receiving, evaluating, storing, and displaying robot fleet
 observations and submitting canonical commands through a replaceable physical gateway. The HTTP
 service binds to `127.0.0.1:8803`; PostgreSQL is authoritative and Redis is an optional bounded
-telemetry cache. Vendor, ROS, CAN, and MQTT interfaces remain in the embedded adapter layer.
+telemetry cache. Vendor, ROS and CAN command interfaces remain in the embedded adapter layer. Optional MQTT telemetry ingress is described in [the recovery runbook](mqtt-recovery.md).
 
 ## Inputs
 
@@ -61,8 +61,8 @@ telemetry cache. Vendor, ROS, CAN, and MQTT interfaces remain in the embedded ad
 | Strict telemetry API | Required fields, finite/ranged values, model profiles, task-state and error-code constraints, unknown-field rejection, and RFC 9457 problem responses | `TelemetryControllerTest`, `RuleEngineTest`, `tests/integration.py` |
 | Idempotent ingestion | Optional UUID `eventId`; identical replay returns the stored response and a changed payload returns HTTP 409 | `tests/integration.py` |
 | Transactional ordering | PostgreSQL transaction plus per-robot advisory lock; previous snapshot selected by `observed_at DESC, id DESC`; an older event cannot replace the latest snapshot | `tests/integration.py` concurrency and ordering cases |
-| Resilient cache | Redis is updated only after database commit, uses a 24-hour TTL and bounded 50-event history, and recent reads fall back to PostgreSQL | `tests/redis_failure.py`, `tests/integration.py` |
-| Recent object API | Recent telemetry is returned as typed response objects in deterministic timestamp/event-ID order with limits from 1 through 50 | `tests/integration.py` |
+| Resilient cache | Redis is updated only after database commit, uses a 24-hour TTL and bounded 50-event history, and recent reads always use PostgreSQL | `tests/redis_failure.py`, `tests/integration.py` |
+| Recent object API | Recent telemetry is returned as typed response objects in deterministic observation-time/database-ID order with limits from 1 through 50 | `tests/integration.py` |
 | Command gateway contract | Strict physical command envelope, expiry and action validation, status, cancellation, and RFC 9457 rejection | `RobotCommandControllerTest`, cross-repository integration smoke |
 | Command idempotency and audit | UUID and payload hash serialize duplicate submission; PostgreSQL retains canonical request and response | `RobotCommandService`, `V3__robot_command_audit.sql`, integration smoke |
 | Mock-first safety | Mock is the default; real targeting requires an independent explicit enablement flag after safety approval | `HttpRobotGateway`, operations runbook |
@@ -74,7 +74,7 @@ telemetry cache. Vendor, ROS, CAN, and MQTT interfaces remain in the embedded ad
 ## Scope boundary
 
 This release ingests telemetry and submits canonical commands to a configured gateway. It does not
-generate trajectories, bypass robot capability checks, implement vendor/ROS/CAN/MQTT protocols, or
+generate trajectories, bypass robot capability checks, implement vendor/ROS/CAN command protocols, or
 claim certified safety behavior. Software protective stop and hardware E-stop remain distinct.
 
 ## Release gate
