@@ -25,7 +25,7 @@ services:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
       mosquitto: {condition: service_healthy}
-    networks: [backend]
+    networks: [backend, ingress]
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health"]
       interval: 3s
@@ -35,7 +35,7 @@ services:
     image: postgres:17-alpine@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
     environment: {POSTGRES_DB: fleet, POSTGRES_USER: fleet, POSTGRES_PASSWORD: fleet-local}
     volumes: ["postgres-data:/var/lib/postgresql/data"]
-    networks: [backend]
+    networks: [backend, ingress]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U fleet -d fleet"]
       interval: 2s
@@ -76,6 +76,9 @@ services:
 networks:
   backend:
     internal: true
+  # Docker does not publish ports on an internal-only network. Only these two
+  # services join this bridge; host publishing remains explicitly loopback-only.
+  ingress: {}
 volumes:
   postgres-data:
   mosquitto-data:

@@ -22,7 +22,9 @@ docker compose -f compose.mqtt.yaml down
 Expected history contains the source UUID, `critical`, and `battery_critical`. Repeating the
 publication preserves one database row and its original decision. `down` keeps broker/DB volumes;
 `down -v` irreversibly removes this local demo's history and sessions. Do not use it on retained data.
-The anonymous broker binds to host loopback only; do not expose it to a LAN or Internet. Authentication,
+The anonymous broker binds to host loopback only; do not expose it to a LAN or Internet.
+Only the app and broker join the host-ingress bridge. PostgreSQL and Redis stay on the internal
+backend network. The ingress bridge permits outbound traffic; this local demo is not an egress firewall. Authentication,
 per-robot publish ACLs, TLS, tenant separation, rate limits and operational backups are prerequisites
 for shared/production use, not capabilities claimed by this demo.
 
