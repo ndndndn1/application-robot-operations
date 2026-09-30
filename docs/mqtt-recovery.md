@@ -144,6 +144,10 @@ explicit driver protocol in `tests/mqtt_recovery.py`. Such evidence must identif
 versions and must not be presented as a Docker/container pass. Container topology, resource limits,
 permissions and image security remain separate CI checks.
 
+Recorded native pre-merge run: [machine-readable evidence](evidence/mqtt-native-premerge.json) and
+[exact synthetic source fixture](evidence/mqtt-native-source.jsonl). This is a native-process result,
+not a claim that the Docker/CI gates passed. The report names its tested commit and Git tree.
+
 The MQTT table is an additive idempotent repeatable migration, avoiding the V4 migration reserved by
 the separate perception/policy work. Future schema evolution must use reviewed ALTER migrations;
 `CREATE IF NOT EXISTS` is not a schema-drift repair mechanism.
