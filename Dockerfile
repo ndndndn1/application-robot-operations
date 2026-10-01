@@ -1,4 +1,4 @@
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS web-build
+FROM node:26-alpine@sha256:0b36e8c136b94cd4fcf02188228e76c31ad5872eef3fec8cbd2eee500cfd9e80 AS web-build
 WORKDIR /web
 COPY web/package.json web/package-lock.json web/tsconfig.json web/vite.config.ts web/index.html ./
 COPY web/src ./src
