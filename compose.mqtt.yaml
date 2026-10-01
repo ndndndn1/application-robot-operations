@@ -1,0 +1,84 @@
+# Standalone local telemetry demo; does not contact a physical-robot gateway.
+services:
+  app:
+    build: {context: ., target: runtime}
+    ports: ["127.0.0.1:8803:8080"]
+    restart: "no"
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 768m
+    cpus: 2.0
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-mqtt}
+      DATABASE_URL: jdbc:postgresql://postgres:5432/fleet
+      DATABASE_USER: fleet
+      DATABASE_PASSWORD: fleet-local
+      REDIS_HOST: redis
+      MQTT_BROKER_URI: tcp://mosquitto:1883
+      MQTT_CLIENT_ID: fleet-ingress-demo
+      MQTT_TEST_HALT_AFTER_COMMIT_EVENT_ID: ${MQTT_TEST_HALT_AFTER_COMMIT_EVENT_ID:-}
+      ROBOT_GATEWAY_URL: http://127.0.0.1:1
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      mosquitto: {condition: service_healthy}
+    networks: [backend, ingress]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+  postgres:
+    image: postgres:17-alpine@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
+    environment: {POSTGRES_DB: fleet, POSTGRES_USER: fleet, POSTGRES_PASSWORD: fleet-local}
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fleet -d fleet"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    mem_limit: 512m
+    pids_limit: 256
+  redis:
+    image: redis:7-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    mem_limit: 192m
+    pids_limit: 128
+  mosquitto:
+    image: eclipse-mosquitto:2.0.22@sha256:199ea8ef2e35ec2b1b37e59cfd1dbae538ed4dfa4a2251a121a52215a6248a21
+    user: "1883:1883"
+    ports: ["127.0.0.1:1883:1883"]
+    restart: "no"
+    read_only: true
+    volumes:
+      - ./config/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    networks: [backend, ingress]
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "127.0.0.1", "-t", "health/probe", "-m", "ready", "-q", "1"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    mem_limit: 128m
+    pids_limit: 64
+networks:
+  backend:
+    internal: true
+  # Docker does not publish ports on an internal-only network. Only these two
+  # services join this bridge; host publishing remains explicitly loopback-only.
+  ingress: {}
+volumes:
+  postgres-data:
+  mosquitto-data:

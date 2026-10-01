@@ -1,0 +1,32 @@
+name: mqtt-purpose-recovery
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: mqtt-purpose-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+
+jobs:
+  real-broker-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Validate purpose harness syntax
+        run: |
+          python3 -m py_compile tests/mqtt_recovery.py
+          bash -n tools/run-mqtt-purpose.sh
+      - name: Test real Spring, PostgreSQL and Mosquitto failures and recovery
+        run: tools/run-mqtt-purpose.sh
+      - name: Retain machine-readable evidence and failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mqtt-purpose-evidence
+          path: artifacts/mqtt-*
+          if-no-files-found: error
+          retention-days: 14

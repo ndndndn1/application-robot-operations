@@ -26,6 +26,14 @@ returns the stored decision with `duplicate: true`; reusing it for different con
 `GET /api/robots/{robotId}/recent?limit=20` returns decoded JSON objects ordered by observation time,
 not JSON-encoded strings.
 
+## Optional real MQTT telemetry
+
+A separate loopback-only Mosquitto demo accepts QoS1 telemetry with stable source event IDs, commits
+valid events or durable rejection records before ACK, and recovers bounded broker backlog over
+subscriber/DB interruption. Run `docker compose -f compose.mqtt.yaml up -d --build --wait`.
+See [MQTT recovery runbook](docs/mqtt-recovery.md) for the exact guarantee, queue/session limits,
+source reconciliation, and the real-process failure test (`tools/run-mqtt-purpose.sh`).
+
 ## Safe command lifecycle
 
 `POST /api/v1/commands` accepts the canonical `physical-robot-interface` command contract. The
@@ -60,8 +68,8 @@ fingerprint; history order is `(observed_at DESC, id DESC)`. Older packets are r
 `out_of_order_timestamp`, but never replace a newer snapshot.
 
 Redis receives the snapshot and bounded 50-event ring only after database commit. Both keys expire
-after 24 hours. Cache failures increment a metric and recent-event reads fall back to PostgreSQL, so
-Redis cannot become the system of record.
+after 24 hours. Cache failures increment a metric. Recent-event reads always use PostgreSQL so a stale or incomplete
+Redis ring after a crash cannot hide committed history. Redis is never the system of record.
 
 ## Run and verify
 
@@ -104,7 +112,7 @@ Review the [enterprise requirements](docs/enterprise-requirements.md) and
 ## Scope boundaries
 
 Authentication, device certificates, TLS, tenant boundaries, and rate limits belong at the deployment
-perimeter and must be supplied before shared or production use. ROS, CAN, MQTT, vendor-specific
+perimeter and must be supplied before shared or production use. ROS, CAN, vendor-specific
 protocols, trajectory generation, and certified safety behavior remain out of scope. The application
 submits canonical commands only through the configured gateway. Default database credentials are
 local-only.
