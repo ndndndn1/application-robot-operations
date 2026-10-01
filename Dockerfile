@@ -14,7 +14,7 @@ RUN mvn -B test package
 FROM backend-build AS test
 CMD ["mvn", "-B", "test"]
 
-FROM eclipse-temurin:21-jre@sha256:8cef5fc7bebe421363ab543a2f4db5caf7d119d8db67d56b0f56c485d2de4d55 AS runtime
+FROM eclipse-temurin:25-jre@sha256:8da0490fa9a3c26867012019565948eef0ee69438f5c75ac28146967bae984b5 AS runtime
 LABEL org.opencontainers.image.source="https://github.com/ndndndn1/application-robot-operations"
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
